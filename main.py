@@ -1,10 +1,12 @@
+# TODO: Complete the crossover and survival_selection functions 
+
 from pprint import pprint
 from utils import select_a_random_chromosome, slelct_a_random_phenotype, swap
 
 POPULATION_SIZE = 100
 PARENET_SELECTION_COUNT = 5
 
-def generate_board():
+def generate_chromosome():
     board = []
     valid_bord_values = [1, 2, 3, 4, 5, 6, 7, 8]
     for i in range(8):
@@ -15,7 +17,7 @@ def generate_board():
 def generate_population(size):
     population = []
     for _ in range(size):
-        population.append(generate_board())
+        population.append(generate_chromosome())
     return population
 
 def fitness_evaluation(queens): 
@@ -57,6 +59,9 @@ def parent_selection(selection_count, population=generate_population(POPULATION_
     return selected_parents[0], selected_parents[1]
 
 def crossover(parent1, parent2):
+    pass
+
+def survival_selection():
     pass
 
 def main():
