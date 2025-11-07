@@ -1,34 +1,28 @@
 from pprint import pprint
 import random
+from configs import CONFIG as cfg
 
 def swap(item1, item2):
-    item1 = item1 ^ item2
-    item2 = item1 ^ item2
-    item1 = item1 ^ item2
-    return item1, item2
+    return item2, item1
 
-def select_a_random_chromosome():
-    index = random.randint(0, 7)
-    return index
+def select_a_random_chromosome(N=cfg.n_queens):
+    return random.randint(0, N - 1)
 
-def slelct_a_random_phenotype(population_size):
-    index = random.randint(0, population_size)
-    return index
+def select_a_random_phenotype(population_size):
+    return random.randint(0, population_size - 1)
 
-def generate_chromosome():
-    return random.sample(range(1, 9), 8)
+def generate_chromosome(N=cfg.n_queens):
+    return random.sample(range(N), N)
 
-def ga_summary(original_population, parents, crossover_result, mutated_children, new_population, survival_selection, mean_fitness):
+def ga_summary(original_population, parents, crossover_result, mutated_children, new_population, survival_selection, mean_fitness, evaluations):
     print("\n----- GA Summary -----")
+    print(f"Evaluations: {evaluations}")
     print(f"Original Population Size: {len(original_population)}")
     print(f"Selected Parents:")
     pprint(parents)
     print(f"Crossover Result:")
     pprint(crossover_result)
-    pprint(f"Mutated Children:")
+    print(f"Mutated Children:")
     pprint(mutated_children)
-    pprint(f"New Population Size: {len(new_population)}")
-    pprint(f"Survival_selection: ")
-    pprint(survival_selection)
-    pprint(f"Mean Fitness: {mean_fitness}")
-    pprint("----------------------")
+    print(f"Mean Fitness: {mean_fitness}")
+    print("----------------------\n")
