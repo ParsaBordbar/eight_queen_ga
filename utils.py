@@ -1,4 +1,3 @@
-from pprint import pprint
 import random
 from configs import CONFIG as cfg
 
@@ -14,15 +13,24 @@ def select_a_random_phenotype(population_size):
 def generate_chromosome(N=cfg.n_queens):
     return random.sample(range(N), N)
 
-def ga_summary(original_population, parents, crossover_result, mutated_children, new_population, survival_selection, mean_fitness, evaluations):
-    print("\n----- GA Summary -----")
-    print(f"Evaluations: {evaluations}")
-    print(f"Original Population Size: {len(original_population)}")
-    print(f"Selected Parents:")
-    pprint(parents)
-    print(f"Crossover Result:")
-    pprint(crossover_result)
-    print(f"Mutated Children:")
-    pprint(mutated_children)
-    print(f"Mean Fitness: {mean_fitness}")
-    print("----------------------\n")
+def ga_summary(
+        original_population,
+        parents,
+        crossover_result,
+        crossover_mode,
+        mutated_children,
+        surival_selection_type,
+        mean_fitness, evaluations):
+
+    print("\n├──----[ GA Round Summary ]-----")
+    print(f"├──> Evaluations: {evaluations}")
+    print(f"├──> Original Population Size: {len(original_population)}")
+    print(f"├── Selected Parents:")
+    print("├──>", parents)
+    print(f"├── Crossver Oprator: {crossover_mode}")
+    print(f"├── Crossover Result:")
+    print("├──>", crossover_result)
+    print(f"├──> Survival Selection Type: {surival_selection_type}")
+    print(f"├──> Mutated Children:")
+    print("├──", mutated_children)
+    print(f"└──[ Mean Fitness: {mean_fitness} ]----\n")
