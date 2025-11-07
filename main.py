@@ -6,6 +6,7 @@ from utils import ga_summary, generate_chromosome, select_a_random_chromosome, s
 def generate_population(size, N=cfg.n_queens):
     return [generate_chromosome(N) for _ in range(size)]
 
+
 def fitness_evaluation(queens):
     penalty = 0
     n = len(queens)
@@ -33,7 +34,7 @@ def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", 
 
     N = len(parent1)
 
-    # === CUT-AND-FILL (default) ===
+    #CUT-AND-FILL
     if mode == "cutfill":
         crossover_point = select_a_random_chromosome(N)
         if crossover_point < 1:
@@ -107,51 +108,76 @@ def mutation(chromosome, prob=cfg.mutation_probability, mode=cfg.mutation_type):
     return chromosome
 
 
-def survival_selection(population, children, population_size=cfg.population_size):
+def survival_selection(population, children, population_size=cfg.population_size, elitism=False, elite_count=2):
     all_samples = population + children
     fitnesses = [{"fitness": fitness_evaluation(s), "chromosome": s} for s in all_samples]
     fitnesses.sort(key=lambda x: x['fitness'], reverse=True)
-    return [f["chromosome"] for f in fitnesses[:population_size]]
+
+    if elitism:
+        elites = fitnesses[:elite_count]
+        remaining = fitnesses[elite_count:]
+        next_gen = elites + remaining[: population_size - elite_count]
+        return [f["chromosome"] for f in next_gen]
+    else:
+        return [f["chromosome"] for f in fitnesses[:population_size]]
 
 
 def fitness_mean(population):
     return round(sum(fitness_evaluation(s) for s in population) / len(population), 4)
 
 
-def simple_GA_pipeline(rounds=cfg.ga_pipeline_rounds,
-                       population_size=cfg.population_size,
-                       parent_selection_count=cfg.parent_selection_count,
-                       N=cfg.n_queens):
-    population = generate_population(population_size, N)
+def simple_GA_pipeline(
+    crossover_mode="cutfill", 
+    cuts=1, 
+    elitism=False
+):
+    population = generate_population(cfg.population_size, cfg.n_queens)
     evaluations = 0
 
-    for gen in range(rounds):
-        parents = parent_selection(parent_selection_count, population)
+    for gen in range(cfg.ga_pipeline_rounds):
+        parents = parent_selection(cfg.parent_selection_count, population)
         evaluations += len(parents)
 
-        crossover_result = crossover(parents[0]['chromosome'], parents[1]['chromosome'])
+        crossover_result = crossover(
+            parents[0]['chromosome'], 
+            parents[1]['chromosome'],
+            prob=cfg.crossover_probability,
+            mode=crossover_mode,
+            cuts=cuts
+        )
         evaluations += 2
 
         children = [mutation(c, cfg.mutation_probability, cfg.mutation_type) for c in crossover_result]
         evaluations += len(children)
 
-        population = survival_selection(population, children, population_size)
+        population = survival_selection(population, children, cfg.population_size, elitism=elitism)
         mean_fitness = fitness_mean(population)
-
-        ga_summary(population, parents, crossover_result, children, population, population, mean_fitness, evaluations)
 
         if any(fitness_evaluation(p) == 1 for p in population):
             print(f"✅ Solution found at generation {gen} after {evaluations} evaluations!")
             break
         if evaluations >= cfg.max_evaluations:
-            print("⚠️ Terminated after reaching evaluation limit.")
+            print("Terminated after reaching evaluation limit.")
             break
 
+        ga_summary(
+            original_population=population,
+            parents=parents,
+            surival_selection_type= elitism == True and "Elitism" or "Standard",
+            crossover_mode= crossover_mode,
+            crossover_result=crossover_result,
+            mutated_children=children,
+            mean_fitness=mean_fitness,
+            evaluations=evaluations
+        )
     return population
 
 
 def main():
-    simple_GA_pipeline(rounds=500, population_size=cfg.population_size, parent_selection_count=cfg.parent_selection_count, N=cfg.n_queens)
+    simple_GA_pipeline(crossover_mode="pmx", elitism=True)
+    # simple_GA_pipeline(crossover_mode="cutfill", elitism=False)
+    # simple_GA_pipeline(crossover_mode="multi", cuts=3)
+
 
 if __name__ == "__main__":
     main()
