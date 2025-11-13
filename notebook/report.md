@@ -1,6 +1,6 @@
 # Report 
 This experiment evaluates the performance of different GA configurations in solving the N-Queens problem.
-Across 24 tested configurations, the GA achieved a 95.8% success rate, with the PMX crossover and moderate mutation rates performing best.
+Across configurations, the GA achieved a 95.8% success rate, with the PMX crossover and moderate mutation rates performing best.
 Results indicate that maintaining structural consistency (PMX) and balanced exploration (mutation = 0.5) optimize convergence speed and stability.
 Visual analysis confirms PMX outperformed CutFill and Multi-Cut modes in both convergence speed and variance.
 
@@ -18,7 +18,7 @@ Visual analysis confirms PMX outperformed CutFill and Multi-Cut modes in both co
 | Crossover probability | 0.5, 1.0                           |
 | Crossover modes       | CutFill, PMX, Multi-Cut (1–3 cuts) |
 | Mutation type         | Bitwise & Swap                     |
-| Elitism               | Enabled / Disabled                 |
+| Elitism               | Enabled / Disabled           `      |
 | Population size       | 100                                |
 | Maximum generations   | 1000                               |
 
@@ -96,7 +96,7 @@ Elitism slightly increased stability, but at times delayed convergence because t
 
   
 
-Interpretation: For small populations, elitism offers limited advantage; the GA naturally maintains top solutions without needing strict elitist preservation.
+Interpretation: For small populations, elitism offers limited advantage; the GA naturally maintains top solutions without needing strict elitist preservation.‍‍
 
   
 
