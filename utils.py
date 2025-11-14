@@ -1,5 +1,8 @@
+
+# Set of Utility Functions
 import random
-from configs import CONFIG as cfg
+import numpy as np
+from configs import cfg
 
 def swap(item1, item2):
     return item2, item1
@@ -13,24 +16,32 @@ def select_a_random_phenotype(population_size):
 def generate_chromosome(N=cfg.n_queens):
     return random.sample(range(N), N)
 
-def ga_summary(
-        original_population,
-        parents,
-        crossover_result,
-        crossover_mode,
-        mutated_children,
-        surival_selection_type,
-        mean_fitness, evaluations):
+def log_generation(generation, mean_fitness, best_fitness, config):
+    data = {
+        "generation": generation,
+        "mean_fitness": mean_fitness,
+        "best_fitness": best_fitness,
+        "mutation_prob": config.mutation_probability,
+        "crossover_prob": config.crossover_probability,
+        "mutation_type": config.mutation_type,
+        "n_queens": config.n_queens
+    }
+    return data
 
-    print("\n├──----[ GA Round Summary ]-----")
-    print(f"├──> Evaluations: {evaluations}")
-    print(f"├──> Original Population Size: {len(original_population)}")
-    print(f"├── Selected Parents:")
-    print("├──>", parents)
-    print(f"├── Crossver Oprator: {crossover_mode}")
-    print(f"├── Crossover Result:")
-    print("├──>", crossover_result)
-    print(f"├──> Survival Selection Type: {surival_selection_type}")
-    print(f"├──> Mutated Children:")
-    print("├──", mutated_children)
-    print(f"└──[ Mean Fitness: {mean_fitness} ]----\n")
+# This utility function checks for mutations that are wrong and fix them (For bitwise mutations to preserve permutation)
+def repair_child(child, N):
+    unique_genes = set(child)
+    missing_genes = [g for g in range(N) if g not in unique_genes]
+
+    seen = set()
+    for i, gene in enumerate(child):
+        if gene in seen:
+            child[i] = missing_genes.pop()
+        else:
+            seen.add(gene)
+    return child
+
+def swap_indices(arr, gene_a, gene_b):
+    idx_a, idx_b = np.where(arr == gene_a)[0], np.where(arr == gene_b)[0]
+    if idx_a.size and idx_b.size:
+        arr[idx_a[0]], arr[idx_b[0]] = arr[idx_b[0]], arr[idx_a[0]]
