@@ -1,182 +1,64 @@
-import random
-from configs import CONFIG as cfg
-from utils import ga_summary, generate_chromosome, select_a_random_chromosome, select_a_random_phenotype
+import pandas as pd
+from configs import cfg
+from ga import simple_GA_pipeline
+from plot import analyze_and_plot_ga_results
 
+def run_experiments():
+    mutation_probs = [0.2, 0.5, 1.0]
+    crossover_probs = [0.5, 1.0]
+    modes = ["cutfill", "pmx", "multi"]
+    cuts = [1, 2, 3]
+    mutations = ['bitwise', 'swap']
+    elitisms = [False, True]
 
-def generate_population(size, N=cfg.n_queens):
-    return [generate_chromosome(N) for _ in range(size)]
+    all_results = []
 
+    for mutation in mutations:
+            for mut in mutation_probs:
+                for cross in crossover_probs:
+                    for mode in modes:
+                        for elite in elitisms:
 
-def fitness_evaluation(queens):
-    penalty = 0
-    n = len(queens)
-    for i in range(n):
-        for j in range(i + 1, n):
-            if queens[i] == queens[j]:
-                penalty += 1
-            elif abs(queens[i] - queens[j]) == abs(i - j):
-                penalty += 1
-    fitness = 1 / (1 + penalty)
-    return round(fitness, 3)
+                            if mode == "multi":
+                                cut_list = cuts
+                            else:
+                                cut_list = [1]  # Default single-cut for others
 
+                            for cut in cut_list:
+                                cfg.mutation_probability = mut
+                                cfg.crossover_probability = cross
 
-def parent_selection(selection_count, population):
-    sample = [population[select_a_random_phenotype(len(population) - 1)]
-              for _ in range(selection_count)]
-    parents = [{"fitness": fitness_evaluation(s), "chromosome": s} for s in sample]
-    parents.sort(key=lambda x: x['fitness'], reverse=True)
-    return parents[0], parents[1]
+                                print(f"\n--- Run: mut={mut}, cross={cross}, mode={mode}, cuts={cut}, elitism={elite} ---")
 
+                                _, df = simple_GA_pipeline(crossover_mode=mode, elitism=elite, cuts=cut)
 
-def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", cuts=1):
-    if random.random() > prob:
-        return [parent1[:], parent2[:]]
+                                final_fit = df["best_fitness"].iloc[-1]
+                                gens = df["generation"].iloc[-1]
 
-    N = len(parent1)
+                                all_results.append({
+                                    "mutation_prob": mut,
+                                    "mutationType": mutation,
+                                    "crossover_prob": cross,
+                                    "mode": mode,
+                                    "cuts": cut,
+                                    "elitism": elite,
+                                    "final_best_fitness": final_fit,
+                                    "generations": gens,
+                                })
 
-    #CUT-AND-FILL
-    if mode == "cutfill":
-        crossover_point = select_a_random_chromosome(N)
-        if crossover_point < 1:
-            crossover_point = 3
-
-        p1_first = parent1[:crossover_point]
-        p2_cycle = parent2[crossover_point:] + parent2[:crossover_point]
-        child1_tail = [g for g in p2_cycle if g not in p1_first][: N - crossover_point]
-        child1 = p1_first + child1_tail
-
-        p2_first = parent2[:crossover_point]
-        p1_cycle = parent1[crossover_point:] + parent1[:crossover_point]
-        child2_tail = [g for g in p1_cycle if g not in p2_first][: N - crossover_point]
-        child2 = p2_first + child2_tail
-        return [child1, child2]
-
-    #PMX CROSSOVER
-    if mode == "pmx":
-        c1, c2 = sorted(random.sample(range(N), 2))
-        child1, child2 = parent1[:], parent2[:]
-
-        child1[c1:c2], child2[c1:c2] = parent2[c1:c2], parent1[c1:c2]
-
-        # mapping
-        mapping1 = {parent2[i]: parent1[i] for i in range(c1, c2)}
-        mapping2 = {parent1[i]: parent2[i] for i in range(c1, c2)}
-
-        # fix duplicates
-        def map_gene(gene, mapping):
-            while gene in mapping:
-                gene = mapping[gene]
-            return gene
-
-        for i in list(range(0, c1)) + list(range(c2, N)):
-            child1[i] = map_gene(child1[i], mapping1)
-            child2[i] = map_gene(child2[i], mapping2)
-        return [child1, child2]
-
-    #MULTI-CUT (2 or 3 cuts)
-    if mode == "multi":
-        cuts = min(cuts, 3)
-        cut_points = sorted(random.sample(range(1, N - 1), cuts))
-        parts1, parts2 = [], []
-        last = 0
-        for cp in cut_points + [N]:
-            parts1.append(parent1[last:cp])
-            parts2.append(parent2[last:cp])
-            last = cp
-        child1, child2 = [], []
-        for i in range(len(parts1)):
-            if i % 2 == 0:
-                child1 += parts1[i]
-                child2 += parts2[i]
-            else:
-                child1 += parts2[i]
-                child2 += parts1[i]
-        return [child1, child2]
-    return [parent1[:], parent2[:]]
-
-
-def mutation(chromosome, prob=cfg.mutation_probability, mode=cfg.mutation_type):
-    if random.random() > prob:
-        return chromosome
-
-    N = len(chromosome)
-    i, j = select_a_random_chromosome(N), select_a_random_chromosome(N)
-    if mode == "swap":
-        chromosome[i], chromosome[j] = chromosome[j], chromosome[i]
-    elif mode == "bitwise":
-        chromosome[i] = random.choice([x for x in range(N) if x not in chromosome or x == chromosome[i]])
-    return chromosome
-
-
-def survival_selection(population, children, population_size=cfg.population_size, elitism=False, elite_count=2):
-    all_samples = population + children
-    fitnesses = [{"fitness": fitness_evaluation(s), "chromosome": s} for s in all_samples]
-    fitnesses.sort(key=lambda x: x['fitness'], reverse=True)
-
-    if elitism:
-        elites = fitnesses[:elite_count]
-        remaining = fitnesses[elite_count:]
-        next_gen = elites + remaining[: population_size - elite_count]
-        return [f["chromosome"] for f in next_gen]
-    else:
-        return [f["chromosome"] for f in fitnesses[:population_size]]
-
-
-def fitness_mean(population):
-    return round(sum(fitness_evaluation(s) for s in population) / len(population), 4)
-
-
-def simple_GA_pipeline(
-    crossover_mode="cutfill", 
-    cuts=1, 
-    elitism=False
-):
-    population = generate_population(cfg.population_size, cfg.n_queens)
-    evaluations = 0
-
-    for gen in range(cfg.ga_pipeline_rounds):
-        parents = parent_selection(cfg.parent_selection_count, population)
-        evaluations += len(parents)
-
-        crossover_result = crossover(
-            parents[0]['chromosome'], 
-            parents[1]['chromosome'],
-            prob=cfg.crossover_probability,
-            mode=crossover_mode,
-            cuts=cuts
-        )
-        evaluations += 2
-
-        children = [mutation(c, cfg.mutation_probability, cfg.mutation_type) for c in crossover_result]
-        evaluations += len(children)
-
-        population = survival_selection(population, children, cfg.population_size, elitism=elitism)
-        mean_fitness = fitness_mean(population)
-
-        if any(fitness_evaluation(p) == 1 for p in population):
-            print(f"✅ Solution found at generation {gen} after {evaluations} evaluations!")
-            break
-        if evaluations >= cfg.max_evaluations:
-            print("Terminated after reaching evaluation limit.")
-            break
-
-        ga_summary(
-            original_population=population,
-            parents=parents,
-            surival_selection_type= elitism == True and "Elitism" or "Standard",
-            crossover_mode= crossover_mode,
-            crossover_result=crossover_result,
-            mutated_children=children,
-            mean_fitness=mean_fitness,
-            evaluations=evaluations
-        )
-    return population
+    results_df = pd.DataFrame(all_results)
+    results_df.to_csv("ga_experiment_results.csv", index=False)
+    print("\n✅ Experiment Results Saved to ga_experiment_results.csv")
+    print(results_df)
+    return results_df
 
 
 def main():
-    simple_GA_pipeline(crossover_mode="pmx", elitism=True)
-    # simple_GA_pipeline(crossover_mode="cutfill", elitism=False)
-    # simple_GA_pipeline(crossover_mode="multi", cuts=3)
+# some basic tests uncomment to run
+    #simple_GA_pipeline(crossover_mode="cutfill")
+    #simple_GA_pipeline(crossover_mode="pmx")
+    run_experiments()
+    analyze_and_plot_ga_results("ga_experiment_results.csv")
 
 
 if __name__ == "__main__":
