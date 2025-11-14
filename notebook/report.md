@@ -29,6 +29,10 @@ Visual analysis confirms PMX outperformed CutFill and Multi-Cut modes in both co
 - Only failure: mutation = 0.5, crossover = 1.0, mode = CutFill, no elitism (stagnated at fitness 0.5)
 
 ## Speed and Success Rate of Each Case
+
+<img width="800" height="500" alt="speed_by_mutation_mode" src="https://github.com/user-attachments/assets/82e51d89-2a1f-4112-bf03-38d0e29ab754" />
+
+
 | Metric                        | Observation                                                                                                                    |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Best-performing crossover** | PMX consistently reached the solution in fewer generations and showed more stable convergence across different mutation rates. |
@@ -53,8 +57,9 @@ Visual analysis confirms PMX outperformed CutFill and Multi-Cut modes in both co
   
 
 ### Convergence Speed by Mutation Rate & Crossover Mode
+<img width="800" height="500" alt="multi_cut_performance" src="https://github.com/user-attachments/assets/375a3fb4-77dc-46b8-94f2-330c3ce950b7" />
+<img width="600" height="400" alt="elitism_effect" src="https://github.com/user-attachments/assets/a04c1acc-5940-4e4d-9646-a46c4c385181" />
 
-  
 
 **Lower = faster convergence**
 
