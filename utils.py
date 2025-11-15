@@ -1,20 +1,20 @@
 
 # Set of Utility Functions
-import random
 import numpy as np
 from configs import cfg
+
 
 def swap(item1, item2):
     return item2, item1
 
 def select_a_random_chromosome(N=cfg.n_queens):
-    return random.randint(0, N - 1)
+    return np.random.randint(0, N - 1)
 
 def select_a_random_phenotype(population_size):
-    return random.randint(0, population_size - 1)
+    return np.random.randint(0, population_size - 1)
 
 def generate_chromosome(N=cfg.n_queens):
-    return random.sample(range(N), N)
+   return np.random.permutation(N)
 
 def log_generation(generation, mean_fitness, best_fitness, config):
     data = {

@@ -2,6 +2,12 @@ import pandas as pd
 from configs import cfg
 from ga import simple_GA_pipeline
 from plot import analyze_and_plot_ga_results
+import numpy as np
+
+
+def set_global_seed(seed=cfg.random_seed):
+    np.random.seed(seed)
+
 
 def run_experiments():
     mutation_probs = [0.2, 0.5, 1.0]
@@ -54,6 +60,7 @@ def run_experiments():
 
 
 def main():
+    set_global_seed()
 # some basic tests uncomment to run
     #simple_GA_pipeline(crossover_mode="cutfill")
     #simple_GA_pipeline(crossover_mode="pmx")

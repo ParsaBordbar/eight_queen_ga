@@ -1,8 +1,6 @@
-import random
 import numpy as np
-import pandas as pd 
+import pandas as pd
 from configs import cfg
-from ga_from_slides.ga_from_slides import generate_population
 from utils import generate_chromosome, log_generation, repair_child, select_a_random_chromosome
 
 
@@ -50,7 +48,7 @@ def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", 
     parent1 = parent1.tolist() if isinstance(parent1, np.ndarray) else parent1
     parent2 = parent2.tolist() if isinstance(parent2, np.ndarray) else parent2
 
-    if random.random() > prob:
+    if np.random.random() > prob:
         return [parent1[:], parent2[:]]
 
     N = len(parent1)
@@ -76,7 +74,7 @@ def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", 
 
     # PMX CROSSOVER
     if mode == "pmx":
-        c1, c2 = sorted(random.sample(range(N), 2))
+        c1, c2 = np.sort(np.random.choice(N, size=2, replace=False))
         child1, child2 = parent1[:], parent2[:]
 
         child1[c1:c2], child2[c1:c2] = parent2[c1:c2], parent1[c1:c2]
@@ -98,7 +96,7 @@ def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", 
     # MULTI-CUT CROSSOVER
     if mode == "multi":
         cuts = min(cuts, 3)
-        cut_points = sorted(random.sample(range(1, N - 1), cuts))
+        cut_points = np.sort(np.random.choice(range(1, N - 1), size=cuts, replace=False))
         parts1, parts2 = [], []
         last = 0
         for cp in cut_points + [N]:
@@ -120,7 +118,7 @@ def crossover(parent1, parent2, prob=cfg.crossover_probability, mode="cutfill", 
     return [parent1[:], parent2[:]]
 
 def mutation(chromosome, prob=cfg.mutation_probability, mode=cfg.mutation_type):
-    if random.random() > prob:
+    if np.random.random() > prob:
         return chromosome
 
     N = len(chromosome)
@@ -128,10 +126,12 @@ def mutation(chromosome, prob=cfg.mutation_probability, mode=cfg.mutation_type):
 
     if mode == "swap":
         chromosome[i], chromosome[j] = chromosome[j], chromosome[i]
+        return chromosome
+
     elif mode == "bitwise":
-        chromosome[i] = random.choice([x for x in range(N) if x not in chromosome or x == chromosome[i]])
+        chromosome[i] = np.random.choice([x for x in range(N) if x not in chromosome or x == chromosome[i]])
         repaired_chromosome = repair_child(chromosome, N)
-    return repaired_chromosome
+        return repaired_chromosome
 
 
 def survival_selection(population, children, population_size=cfg.population_size, elitism=False, elite_count=2):
@@ -151,7 +151,7 @@ def fitness_mean(fitnesses):
     return np.mean(fitnesses)
 
 # This Function Combines everything above it as a single pipeline! 
-def simple_GA_pipeline(crossover_mode="cutfill", cuts=1, elitism=False, mutationType=cfg.mutation_type):
+def simple_GA_pipeline(crossover_mode="cutfill", seed=42, cuts=1, elitism=False, mutationType=cfg.mutation_type):
     population = generate_population(cfg.population_size, cfg.n_queens)
     fitnesses = fitness_evaluation_vectorized(population)
     log_data = []

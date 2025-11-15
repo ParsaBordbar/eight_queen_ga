@@ -12,3 +12,4 @@ wheels/
 # Plots and Output Files
 **Plots
 **.csv
+**.env
