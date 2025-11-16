@@ -1,155 +1,205 @@
-# Report 
-This experiment evaluates the performance of different GA configurations in solving the N-Queens problem.
-Across configurations, the GA achieved a 95.8% success rate, with the PMX crossover and moderate mutation rates performing best.
-Results indicate that maintaining structural consistency (PMX) and balanced exploration (mutation = 0.5) optimize convergence speed and stability.
-Visual analysis confirms PMX outperformed CutFill and Multi-Cut modes in both convergence speed and variance.
+# **Genetic Algorithm Report — N-Queens**
 
-#### In this note book we've tested the Simple GA with different configs combining:
-- Mutation probabilities: 0.2, 0.5, 1.0
-- Crossover probabilities: 0.5, 1.0
-- Crossover modes: CutFill and PMX, multi-cut (1-3)
-- Elitism: On and Off
-- Mutation type: Bitwise and swap
+This assignment evaluates the performance of different Genetic Algorithm (GA) configurations on the **8-Queens** problem using combinations of crossover types, mutation types, mutation rates, crossover probabilities, elitism, and multi-cut crossover variants.
 
+Across all configurations, the GA achieved a **96.8% success rate**, failing only in a few extreme configurations (mostly multi-cut with stagnation).
 
-| Parameter             | Values Tested                      |
-| --------------------- | ---------------------------------- |
-| Mutation probability  | 0.2, 0.5, 1.0                      |
-| Crossover probability | 0.5, 1.0                           |
-| Crossover modes       | CutFill, PMX, Multi-Cut (1–3 cuts) |
-| Mutation type         | Bitwise & Swap                     |
-| Elitism               | Enabled / Disabled           `      |
-| Population size       | 100                                |
-| Maximum generations   | 1000                               |
+Most runs converged very quickly — many in **0 to 10 generations**, with rare outliers up to the 900–1000 generation limit.
 
+The results show clear patterns:
 
-- Success rate: 95.8% (all but one configuration reached fitness = 1.0)
-- Average generations to reach solution: ~85
-- Fastest convergence: < 10 generations in several cases
-- Only failure: mutation = 0.5, crossover = 1.0, mode = CutFill, no elitism (stagnated at fitness 0.5)
+- **PMX crossover remains the most stable overall**
+- **CutFill benefits strongly from swap mutation**
+- **Multi-cut crossover is chaotic but occasionally extremely fast**
+- **Elitism improves reliability but sometimes increases generation count**
+- **Mutation rates 0.5–1.0 with swap or bitwise lead to the best outcomes**
 
-## Speed and Success Rate of Each Case
+---
 
-<img width="800" height="500" alt="speed_by_mutation_mode" src="https://github.com/user-attachments/assets/82e51d89-2a1f-4112-bf03-38d0e29ab754" />
+# **Parameters Tested**
 
+| Parameter | Values |
+| --- | --- |
+| Mutation probability | 0.2, 0.5, 1.0 |
+| Mutation type | bitwise, swap |
+| Crossover probability | 0.5, 1.0 |
+| Crossover mode | cutfill, PMX, multi-cut (1–3 cuts) |
+| Elitism | True / False |
+| Population size | 100 |
+| Max generations | 1000 |
 
-| Metric                        | Observation                                                                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Best-performing crossover** | PMX consistently reached the solution in fewer generations and showed more stable convergence across different mutation rates. |
-| **CutFill**                   | Worked well in moderate mutation/crossover settings but tended to stagnate at extreme probabilities.                           |
-| **Multi-Cut (2–3 cuts)**      | Sometimes improved diversity and exploration but didn’t always outperform PMX.                                                 |
-| **Elitism**                   | Slightly increased stability but occasionally slowed convergence when diversity was reduced.                                   |
-| **Mutation Rate**             | A mid-range mutation rate (0.5) provided the best balance of diversity and stability.                                          |
+---
 
-<br>
+# **Overall Results Summary**
 
-| Setting                         | Performance            | Explanation                                                                                             |
-| ------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Crossover Mode = PMX**        | Best overall         | PMX maintains mapping between parent genes, preserving permutation validity and structural inheritance. |
-| **Mutation Probability = 0.5**  | Balanced            | Provides enough diversity to escape local minima without losing structure.                              |
-| **Crossover Probability = 1.0** | Fast Convergence | Ensures crossover is always applied, improving exploration speed.                                       |
-| **Elitism = False**             | Slightly faster     | Prevents premature convergence by avoiding overprotection of top individuals.                           |
-| **Multi-Cut = 1–2 cuts**        | Good diversity      | Multi-cut helps when population stagnates but beyond 2 cuts, disruption outweighs benefit.              |
+### **Success Rate:** **96.8%**
 
-<br>
+Only **10 failures** out of 312 total runs (mostly multi-cut mode combined with certain mutation types).
 
+### **Average generations to solution:**
 
-  
+**~78 generations** (median is much lower due to many instant solutions)
 
-### Convergence Speed by Mutation Rate & Crossover Mode
-<img width="800" height="500" alt="multi_cut_performance" src="https://github.com/user-attachments/assets/375a3fb4-77dc-46b8-94f2-330c3ce950b7" />
-<img width="600" height="400" alt="elitism_effect" src="https://github.com/user-attachments/assets/a04c1acc-5940-4e4d-9646-a46c4c385181" />
+### **Fastest convergence:**
 
+**Generation 0** in multiple cases
 
-**Lower = faster convergence**
+(e.g., cutfill, multi-cut, PMX — particularly with swap mutation)
 
-  
+### **Slowest successful case:**
 
-Shows that PMX was the most reliable operator across all mutation levels, with CutFill lagging slightly, especially at high mutation rates.
+~883 generations
 
-  
+(multi-cut with swap mutation)
 
-Interpretation: PMX preserves relative order and mapping, helping maintain valid permutations. CutFill, in contrast, may introduce more disruption between parent and child genes.
+### **Failure patterns:**
 
-  
+Most failures occur where diversity collapses early — common in
 
-**Boxplot — Variability in Generations per Crossover Mode**
+- multi-cut with swap mutation
+- elitism ON + high mutation sometimes clash
+- extremely noisy search with bitwise mutation + multi-cut (rare)
 
-  
+---
 
--  Smaller box = more stable behavior
+# **Performance**
 
-  
+![speed_by_mutation_mode.png](attachment:78a601f7-4958-4c1e-9c97-abb7e59a801b:speed_by_mutation_mode.png)
 
-PMX not only converged faster but also with less variance — indicating better stability.
+## **Best Overall Configuration**
 
-CutFill showed wider variation (sensitive to randomness), while Multi-Cut had moderate variance.
+Across all data:
 
-  
+| Parameter | Best Values |
+| --- | --- |
+| **Crossover mode** | **PMX** |
+| **Mutation probability** | **0.5 – 1.0** |
+| **Crossover probability** | **1.0** |
+| **Mutation type** | **swap** (quickest), bitwise (stable) |
+| **Elitism** | **OFF** (faster), ON (more consistent) |
+| **Multi-cut** | **1–2 cuts** if used |
 
-Interpretation: PMX is more robust for permutation problems where positional consistency matters.
+PMX still demonstrates the most consistent convergence across mutation types and probabilities.
 
-  
+---
 
-**Elitism vs. Non-Elitism**
+# **Mode-by-Mode Summary**
 
-  
+![distribution_by_mode.png](attachment:d1135bce-3a1e-4d01-888f-25c8b202ee8b:distribution_by_mode.png)
 
-Shows average generations with and without elitism.
+### **PMX Crossover — Most Stable & Efficient**
 
-Elitism slightly increased stability, but at times delayed convergence because top chromosomes dominated too early, reducing diversity.
+- Rarely fails
+- Converges quickly (often <100 generations)
+- Strong structure preservation helps permutation problems
+- Works well with both mutation types
 
-  
+**Example:**
 
-Interpretation: For small populations, elitism offers limited advantage; the GA naturally maintains top solutions without needing strict elitist preservation.‍‍
+- mutation=0.5, pmx → 31–81 generations
+- mutation=1.0, pmx → many instant solutions (gen 0 or gen ≤60)
 
-  
+---
 
-**Multi-Cut Crossover Comparison**
+### **CutFill Crossover — Fast with Swap Mutation**
 
-  
+CutFill often converges **instantly** with swap mutation:
 
-When varying the number of crossover cuts:
+- mutation=0.5, swap → **generation 0**
+- mutation=1.0, swap → often ≤100 generations
 
-  
+But bitwise mutation versions can become unstable when elitism is ON.
 
-1-cut (simple split): fastest convergence (less disruption)
+---
 
-  
+### **Multi-Cut Crossover — High Variance (Exploration-Heavy)**
 
-2–3 cuts: improved exploration but slower average convergence
+Multi-cut crossover behaves chaotically:
 
-  
+- Sometimes extremely fast (gen 0–5)
+- Sometimes extremely slow (gen 800–999)
+- Rare failures (fitness stuck at 0.5)
 
-Interpretation: Higher cuts increase diversity but disrupt gene continuity; the optimal cut count is usually 1–2 for the N-Queens problem.
+**Patterns:**
 
+- 1-cut is fastest
+- 2-cut is reasonable
+- 3-cut is unpredictable
+- Elitism ON + too many cuts slows everything down
+- Bitwise mutation helps recover diversity
 
-The GA exhibited strong exploitation through fitness-based selection and crossover inheritance, and controlled exploration through mutation and randomized crossover points.
+---
 
-Exploration mainly came from:
+# **Elitism Effects**
 
-Bitwise mutation (reintroducing lost gene diversity)
+![elitism_effect.png](attachment:45cea69c-e1fe-4cb0-8ec1-8a10ad995117:elitism_effect.png)
 
-Multi-cut crossover (shuffling multiple gene segments)
+| Elitism | Behavior |
+| --- | --- |
+| **OFF** | Faster exploration, more 0-generation solves, but a few failures |
+| **ON** | More stable, fewer failures, but slower average convergence |
 
-Exploitation came from:
+Elitism is good when mutation is *low*, but harmful when mutation is *high* (over-exploitation).
 
-Fitness sorting and elitism
+---
 
-PMX crossover (preserving gene mapping)
+# **Mutation Type Comparison**
 
-The best configurations achieved a dynamic balance — sufficient exploration early on, gradually shifting to exploitation as fit individuals dominated.
+![multi_cut_performance.png](attachment:d0f302f3-2f2c-438a-9b03-2c05fd0e0321:multi_cut_performance.png)
 
+### **Swap Mutation**
 
-### Conclusions
+- Produces the **fastest solutions**
+- Strong for CutFill and PMX
+- Ideal for permutation problems
 
-The GA successfully solved the N-Queens problem in nearly all configurations.
-However, parameter tuning had a large effect on speed and reliability.
+### **Bitwise Mutation**
 
-PMX crossover → best stability and fastest convergence
+- More chaotic but **better at exploring**
+- Helps Multi-cut avoid stagnation
+- Slower but robust
 
-Balanced mutation → prevents stagnation
+---
 
-Elitism → good for stability, not for speed
+# **Mutation Probability Comparison**
 
-Multi-cut → offers exploration but adds computational noise
+| Mutation Rate | Behavior |
+| --- | --- |
+| **0.2** | Risk of stagnation, especially without elitism |
+| **0.5** | Best balance — stable convergence |
+| **1.0** | Very fast early convergence, but sometimes unstable |
+
+Interestingly, high mutation (1.0) + PMX is unexpectedly strong.
+
+---
+
+# **Exploration vs Exploitation**
+
+### **Exploration Sources**
+
+- Mutation probability 0.5–1.0
+- Swap mutation (random exchanges)
+- Multi-cut crossover (especially 2–3 cuts)
+- Crossover probability 1.0
+
+### **Exploitation Sources**
+
+- PMX crossover (preserves mapping)
+- Elitism
+- CutFill when diversity is low
+
+The best-performing configurations effectively **start exploratory** and naturally **shift toward exploitation** as fitness improves.
+
+---
+
+# **Conclusions**
+
+- **PMX remains the most reliable crossover method**
+- **Swap mutation dramatically improves convergence speeds**
+- **Multi-cut is unpredictable but useful for exploration**
+- **Elitism helps stability but can slow convergence**
+- **Mutation rates ≥ 0.5 provide best performance**
+
+The GA solved almost all configurations, achieving high reliability and demonstrating how crossover structure, mutation diversity, and elitist pressure interact in permutation-based optimization.
+
+---
